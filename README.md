@@ -13,19 +13,26 @@
 
 # 1. Retrieving the images on Docker-Hub #
 
-docker login
+```bash
+$ docker login
+Login with your Docker ID to push and pull images from Docker Hub. If you don't have a Docker ID, head over to https://hub.docker.com to create one.
+Username:
+Password:
+```
 
-docker pull mysql:8.0
+```bash
+$ docker pull mysql:8.0
 
-docker pull oaisoftwarealliance/oai-amf:latest
-docker pull oaisoftwarealliance/oai-nrf:latest
-docker pull oaisoftwarealliance/oai-smf:latest
-docker pull oaisoftwarealliance/oai-spgwu-tiny:latest
+$ docker pull oaisoftwarealliance/oai-amf:latest
+$ docker pull oaisoftwarealliance/oai-nrf:latest
+$ docker pull oaisoftwarealliance/oai-smf:latest
+$ docker pull oaisoftwarealliance/oai-spgwu-tiny:latest
 
-docker pull oaisoftwarealliance/oai-gnb:develop
-docker pull oaisoftwarealliance/oai-nr-ue:develop
+$ docker pull oaisoftwarealliance/oai-gnb:develop
+$ docker pull oaisoftwarealliance/oai-nr-ue:develop
 
-docker images
+$ docker images
+```
 
 # 2. Deploy containers #
 
@@ -33,21 +40,28 @@ docker images
 
 ## 2.1. Deploy OAI 5G Core Network ##
 
-docker-compose up -d mysql oai-nrf oai-amf oai-smf oai-spgwu oai-ext-dn
+```bash
+$ docker-compose up -d mysql oai-nrf oai-amf oai-smf oai-spgwu oai-ext-dn
+```
 
 Wait for a bit.
 
 ## 2.2 Deploy OAI gNB in RF simulator mode and in Standalone Mode
 
-docker-compose up -d oai-gnb
+```bash
+$ docker-compose up -d oai-gnb
+```
 
 Wait for a bit.
 
 ## 2.3 Deploy OAI NR-UE in RF simulator mode and in Standalone Mode
-
-docker-compose up -d oai-nr-ue
+```bash
+$ docker-compose up -d oai-nr-ue
+```
 
 Wait for a bit.
+
+```bash
 
 $ docker-compose ps -a
        Name                     Command                  State                  Ports            
