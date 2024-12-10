@@ -1,19 +1,3 @@
-<table style="border-collapse: collapse; border: none;">
-  <tr style="border-collapse: collapse; border: none;">
-    <td style="border-collapse: collapse; border: none;">
-      <a href="http://www.openairinterface.org/">
-         <img src="../../../doc/images/oai_final_logo.png" alt="" border=3 height=50 width=150>
-         </img>
-      </a>
-    </td>
-    <td style="border-collapse: collapse; border: none; vertical-align: center;">
-      <b><font size = "5">OAI Full Stack 5G-NR RF simulation with containers</font></b>
-    </td>
-  </tr>
-</table>
-
-This page is only valid for an `Ubuntu18` host.
-
 **TABLE OF CONTENTS**
 
 1. [Retrieving the images on Docker-Hub](#1-retrieving-the-images-on-docker-hub)
@@ -29,152 +13,42 @@ This page is only valid for an `Ubuntu18` host.
 
 # 1. Retrieving the images on Docker-Hub #
 
-Currently the images are hosted under the user account `rdefosseoai`.
+docker login
 
-This may change in the future.
+docker pull mysql:8.0
 
-Once again you may need to log on [docker-hub](https://hub.docker.com/) if your organization has reached pulling limit as `anonymous`.
+docker pull oaisoftwarealliance/oai-amf:latest
+docker pull oaisoftwarealliance/oai-nrf:latest
+docker pull oaisoftwarealliance/oai-smf:latest
+docker pull oaisoftwarealliance/oai-spgwu-tiny:latest
 
-```bash
-$ docker login
-Login with your Docker ID to push and pull images from Docker Hub. If you don't have a Docker ID, head over to https://hub.docker.com to create one.
-Username:
-Password:
-```
+docker pull oaisoftwarealliance/oai-gnb:develop
+docker pull oaisoftwarealliance/oai-nr-ue:develop
 
-Now pull images.
-
-```bash
-$ docker pull mysql:5.7
-$ docker pull rdefosseoai/oai-amf:latest
-$ docker pull rdefosseoai/oai-nrf:latest
-$ docker pull rdefosseoai/oai-smf:latest
-$ docker pull rdefosseoai/oai-spgwu-tiny:latest
-
-$ docker pull rdefosseoai/oai-gnb:develop
-$ docker pull rdefosseoai/oai-nr-ue:develop
-```
-
-And **re-tag** them for tutorials' docker-compose file to work.
-
-```bash
-$ docker image tag rdefosseoai/oai-amf:latest oai-amf:latest
-$ docker image tag rdefosseoai/oai-nrf:latest oai-nrf:latest
-$ docker image tag rdefosseoai/oai-smf:latest oai-smf:latest
-$ docker image tag rdefosseoai/oai-spgwu-tiny:latest oai-spgwu-tiny:latest
-
-$ docker image tag rdefosseoai/oai-gnb:develop oai-gnb:develop
-$ docker image tag rdefosseoai/oai-nr-ue:develop oai-nr-ue:develop
-```
-
-```bash
-$ docker logout
-```
+docker images
 
 # 2. Deploy containers #
 
 ![Deployment](./oai-end-to-end.jpg)
 
-**CAUTION: this SHALL be done in multiple steps.**
-
-**Just `docker-compose up -d` WILL NOT WORK!**
-
-All the following commands **SHALL** be run from the `ci-scripts/yaml_files/5g_rfsimulator` folder.
-
 ## 2.1. Deploy OAI 5G Core Network ##
 
-```bash
-$ cd ci-scripts/yaml_files/5g_rfsimulator
-$ docker-compose up -d mysql oai-nrf oai-amf oai-smf oai-spgwu oai-ext-dn
-Creating network "rfsim5g-oai-public-net" with driver "bridge"
-Creating network "rfsim5g-oai-traffic_net-net" with driver "bridge"
-Creating rfsim5g-oai-nrf ... done
-Creating rfsim5g-mysql      ... done
-Creating rfsim5g-oai-spgwu ... done
-Creating rfsim5g-oai-amf   ... done
-Creating rfsim5g-oai-smf   ... done
-Creating rfsim5g-oai-ext-dn ... done
-```
+docker-compose up -d mysql oai-nrf oai-amf oai-smf oai-spgwu oai-ext-dn
 
 Wait for a bit.
 
-```bash
-$ docker-compose ps -a
-       Name                     Command                  State                  Ports            
--------------------------------------------------------------------------------------------------
-rfsim5g-mysql        docker-entrypoint.sh mysqld      Up (healthy)   3306/tcp, 33060/tcp         
-rfsim5g-oai-amf      /bin/bash /openair-amf/bin ...   Up (healthy)   38412/sctp, 80/tcp, 9090/tcp
-rfsim5g-oai-ext-dn   /bin/bash -c  apt update;  ...   Up (healthy)                               
-rfsim5g-oai-nrf      /bin/bash /openair-nrf/bin ...   Up (healthy)   80/tcp, 9090/tcp            
-rfsim5g-oai-smf      /bin/bash -c /openair-smf/ ...   Up (healthy)   80/tcp, 8805/udp, 9090/tcp  
-rfsim5g-oai-spgwu    /openair-spgwu-tiny/bin/en ...   Up (healthy)   2152/udp, 8805/udp          
-```
+## 2.2 Deploy OAI gNB in RF simulator mode and in Standalone Mode
 
-At this point, you can prepare a capture on the newly-created public docker bridges:
-
-```bash
-$ ifconfig 
-...
-rfsim5g-public: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
-        inet 192.168.71.129  netmask 255.255.255.192  broadcast 192.168.71.191
-        inet6 fe80::42:c4ff:fe2b:3d38  prefixlen 64  scopeid 0x20<link>
-        ether 02:42:c4:2b:3d:38  txqueuelen 0  (Ethernet)
-        RX packets 4  bytes 112 (112.0 B)
-        RX errors 0  dropped 0  overruns 0  frame 0
-        TX packets 7  bytes 626 (626.0 B)
-        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
-
-rfsim5g-traffic: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
-        inet 192.168.72.129  netmask 255.255.255.192  broadcast 192.168.72.191
-        inet6 fe80::42:b5ff:fed3:e732  prefixlen 64  scopeid 0x20<link>
-        ether 02:42:b5:d3:e7:32  txqueuelen 0  (Ethernet)
-        RX packets 2652  bytes 142335 (142.3 KB)
-        RX errors 0  dropped 0  overruns 0  frame 0
-        TX packets 3999  bytes 23367972 (23.3 MB)
-        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
-...
-```
-
-## 2.2. Deploy OAI gNB in RF simulator mode and in Standalone Mode ##
-
-```bash
-$ docker-compose up -d oai-gnb
-rfsim5g-oai-nrf is up-to-date
-rfsim5g-oai-spgwu is up-to-date
-rfsim5g-oai-ext-dn is up-to-date
-Creating rfsim5g-oai-gnb ... done
-```
+docker-compose up -d oai-gnb
 
 Wait for a bit.
 
-```bash
-$ docker-compose ps -a
-       Name                     Command                  State                  Ports            
--------------------------------------------------------------------------------------------------
-rfsim5g-mysql        docker-entrypoint.sh mysqld      Up (healthy)   3306/tcp, 33060/tcp         
-rfsim5g-oai-amf      /bin/bash /openair-amf/bin ...   Up (healthy)   38412/sctp, 80/tcp, 9090/tcp
-rfsim5g-oai-ext-dn   /bin/bash -c  apt update;  ...   Up (healthy)                               
-rfsim5g-oai-gnb      /opt/oai-gnb/bin/entrypoin ...   Up (healthy)                               
-rfsim5g-oai-nrf      /bin/bash /openair-nrf/bin ...   Up (healthy)   80/tcp, 9090/tcp            
-rfsim5g-oai-smf      /bin/bash -c /openair-smf/ ...   Up (healthy)   80/tcp, 8805/udp, 9090/tcp  
-rfsim5g-oai-spgwu    /openair-spgwu-tiny/bin/en ...   Up (healthy)   2152/udp, 8805/udp          
-```
+## 2.3 Deploy OAI NR-UE in RF simulator mode and in Standalone Mode
 
-## 2.3. Deploy OAI NR-UE in RF simulator mode and in Standalone Mode ##
-
-```bash
-$ docker-compose up -d oai-nr-ue
-rfsim5g-mysql is up-to-date
-rfsim5g-oai-nrf is up-to-date
-rfsim5g-oai-spgwu is up-to-date
-rfsim5g-oai-ext-dn is up-to-date
-rfsim5g-oai-gnb is up-to-date
-Creating rfsim5g-oai-nr-ue ... done
-```
+docker-compose up -d oai-nr-ue
 
 Wait for a bit.
 
-```bash
 $ docker-compose ps -a
        Name                     Command                  State                  Ports            
 -------------------------------------------------------------------------------------------------
@@ -218,7 +92,7 @@ oaitun_ue1: flags=4305<UP,POINTOPOINT,RUNNING,NOARP,MULTICAST>  mtu 1500
         TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
 ```
 
-# 3. Check traffic #
+## 3. Check traffic ##
 
 ## 3.1. Check your Internet connectivity ##
 
